@@ -15,7 +15,7 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	config := config.GlobalConfig
 	URL, err := url.Parse(config.OauthConf.Endpoint.AuthURL)
 	if err != nil {
-		log.Fatal("Parse: " + err.Error())
+		log.Print("Parse: " + err.Error())
 	}
 	parameters := url.Values{}
 	parameters.Add("client_id", config.OauthConf.ClientID)
@@ -25,8 +25,8 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	parameters.Add("state", config.OauthStateStringGl)
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
-	log.Print(url)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	w.Header().Set("HX-Redirect", url)
+
 }
 
 func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +43,7 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 
 	if code == "" {
-		log.Fatal("Code not found..")
+		log.Print("Code not found..")
 		w.Write([]byte("Code Not Found to provide AccessToken..\n"))
 		reason := r.FormValue("error_reason")
 		if reason == "user_denied" {
@@ -55,7 +55,7 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 		token, err := config.OauthConf.Exchange(ctx, code)
 		if err != nil {
-			log.Fatal("oauthConfGl.Exchange() failed with " + err.Error() + "\n")
+			log.Print("oauthConfGl.Exchange() failed with " + err.Error() + "\n")
 			return
 		}
 
@@ -65,7 +65,7 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 		err = services.GetResource(ctx, "https://www.googleapis.com/oauth2/v3/userinfo", &response, token.AccessToken)
 
 		if err != nil {
-			log.Fatal("Get: " + err.Error() + "\n")
+			log.Print("Get: " + err.Error() + "\n")
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}

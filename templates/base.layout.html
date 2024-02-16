@@ -1,0 +1,25 @@
+{{define "base" }}
+    <!doctype html>
+    <html lang="en">
+
+    {{template "header" .}}
+
+    <body>
+      <main>
+        <div class="md:container md:mx-auto">
+
+    {{block "content" .}}
+
+    {{end}}
+
+    {{block "js" .}}
+
+    {{end}}
+
+    {{template "footer" .}}
+            </div>
+        </main>
+    </body>
+    </html>
+
+{{end}}

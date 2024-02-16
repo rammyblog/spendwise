@@ -8,7 +8,6 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rammyblog/spendwise/config"
-	"github.com/rammyblog/spendwise/router"
 	"github.com/rammyblog/spendwise/services"
 )
 
@@ -24,7 +23,7 @@ func main() {
 	// Set google variables
 	services.InitializeOAuthGoogle()
 
-	handler := router.Init()
+	handler := router()
 
 	server := &http.Server{
 		Addr:    port,

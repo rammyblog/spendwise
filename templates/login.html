@@ -1,0 +1,17 @@
+{{template "base" .}} {{define "content"}}
+<div class="flex items-center justify-center h-screen">
+  <div class="bg-white p-8 -md w-80">
+    <button
+      hx-post="/handle-login"
+      class="flex items-center justify-center space-x-4 w-full py-2 px-4 mb-3 rounded text-black bg-white border border-gray-300 hover:bg-gray-100"
+    >
+      <img src="/static/img/google.svg" alt="Google" />
+      <span>Sign in with Google</span>
+    </button>
+    <span class="text-sm text-gray-600"
+      >Don't have an account?
+      <a class="underline text-blue-400" href="/signup">Sign up</a></span
+    >
+  </div>
+</div>
+{{end}}
