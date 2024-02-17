@@ -16,6 +16,7 @@ func router() *chi.Mux {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
+
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static", fs))
 

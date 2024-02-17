@@ -6,10 +6,27 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/rammyblog/spendwise/config"
+	"github.com/rammyblog/spendwise/models"
+	"github.com/rammyblog/spendwise/repositories"
 	"github.com/rammyblog/spendwise/services"
+	"github.com/rammyblog/spendwise/utils"
 )
+
+type UserInfo struct {
+	Sub           string    `json:"sub"`
+	GivenName     string    `json:"given_name"`
+	FamilyName    string    `json:"family_name"`
+	Nickname      string    `json:"nickname"`
+	Name          string    `json:"name"`
+	Picture       string    `json:"picture"`
+	Locale        string    `json:"locale"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Email         string    `json:"email"`
+	EmailVerified bool      `json:"email_verified"`
+}
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	config := config.GlobalConfig
@@ -59,7 +76,7 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var response map[string]interface{}
+		var response UserInfo
 
 		// Get the user details
 		err = services.GetResource(ctx, "https://www.googleapis.com/oauth2/v3/userinfo", &response, token.AccessToken)
@@ -70,9 +87,43 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("User Info>> %+v", response)
+		// write access token and refresh token to cookie
+		utils.SetCookie(w, "access_token", token.AccessToken, token.Expiry)
+		utils.SetCookie(w, "refresh_token", token.RefreshToken, token.Expiry)
 
-		w.Write([]byte("Hello, I'm protected\n"))
-		return
+		// Get the user repository
+		userRepo := repositories.NewUserRepository(config.DB)
+		user := &models.User{
+			Email:         response.Email,
+			FirstName:     response.GivenName,
+			LastName:      response.FamilyName,
+			Picture:       response.Picture,
+			Provider:      "google",
+			EmailVerified: response.EmailVerified,
+			ProviderID:    response.Sub,
+		}
+		err = userRepo.Create(user)
+
+		if err != nil {
+			if strings.Contains(err.Error(), `duplicate key value violates unique constraint "users_email_key"`) {
+				newUser := &models.User{
+					FirstName:     response.GivenName,
+					LastName:      "ooop",
+					Picture:       response.Picture,
+					EmailVerified: response.EmailVerified,
+					ProviderID:    response.Sub,
+				}
+				err = userRepo.Update(response.Email, newUser)
+				if err != nil {
+					log.Printf("We got here: %v", err)
+					http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+
+				}
+			}
+		}
+
+		// redirect to the home page
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+
 	}
 }

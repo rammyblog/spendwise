@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rammyblog/spendwise/config"
+	"github.com/rammyblog/spendwise/database"
 	"github.com/rammyblog/spendwise/services"
 )
 
@@ -17,8 +18,15 @@ func main() {
 	}
 
 	port := fmt.Sprintf(":%v", os.Getenv("PORT"))
+	db, err := database.Init()
 
-	config.GlobalConfig = &config.AppConfig{}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config.GlobalConfig = &config.AppConfig{
+		DB: db,
+	}
 
 	// Set google variables
 	services.InitializeOAuthGoogle()
