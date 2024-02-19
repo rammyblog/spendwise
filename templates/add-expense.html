@@ -9,50 +9,106 @@
 
 <!-- Main Content -->
 <div class="container mx-auto mt-8">
-  <div class="h3">Add new transaction</div>
+  <h3 class="my-2">Add new Expense</h3>
 
-  <form action="/dashboard/add-expense" method="post">
-    <label for="name">Name</label>
-    <input
-      type="text"
-      name="name"
-      id="name"
-      class="w-full border p-2 mb-4"
-      required
-    />
+  <form hx-post="/dashboard/add-expense" method="post" hx-swap="outerHTML">
+    <div class="flex flex-wrap -mx-3 mb-6">
+      <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+        <label
+          class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+          for="name"
+          >Name</label
+        >
+        <input
+          type="text"
+          name="name"
+          id="name"
+          placeholder="Name of the expense"
+          class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          required
+        />
+      </div>
 
-    <label for="amount">Amount</label>
-    <input
-      type="number"
-      name="amount"
-      id="amount"
-      class="w-full border p-2 mb-4"
-      required
-    />
+      <div class="w-full md:w-1/2 px-3">
+        <label
+          class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+          for="amount"
+          >Amount</label
+        >
+        <input
+          type="number"
+          name="amount"
+          id="amount"
+          placeholder="500"
+          class="shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          required
+        />
+      </div>
+    </div>
 
-    <label for="category">Category</label>
-    <select name="category_id" id="category" class="w-full border p-2 mb-4">
-      {{ range .Data }}
-      <option value="{{.ID}}">{{.Name}}</option>
-      {{end}}
-    </select>
-
-    <label for="date">Date</label>
-    <input
-      type="date"
-      name="expense_date"
-      id="date"
-      class="w-full border p-2 mb-4"
-      required
-    />
-
-    <label for="decription">Notes</label>
-    <textarea
-      name="description"
-      id="description"
-      class="w-full border p-2 mb-4"
-    ></textarea>
-
+    <div class="flex flex-wrap -mx-3 mb-6">
+      <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+        <label
+          class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+          for="category"
+          >Category</label
+        >
+        <div class="relative">
+          <select
+            name="category_id"
+            id="category"
+            class="block bg-white shadow-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          >
+            {{ range .Data }}
+            <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="w-full md:w-1/2 px-3">
+        <label
+          class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+          for="date"
+          >Date</label
+        >
+        <input
+          type="date"
+          name="expense_date"
+          id="date"
+          placeholder="Date of the expense"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          required
+        />
+      </div>
+    </div>
+    <div class="flex flex-wrap -mx-3 mb-6">
+      <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+        <label
+          class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+          for="decription"
+          >Notes</label
+        >
+        <textarea
+          name="description"
+          id="description"
+          placeholder="Additional notes"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        ></textarea>
+      </div>
+    </div>
     <button
       type="submit"
       class="bg-blue-500 text-white p-2 rounded-sm w-20 hover:bg-slate-700"
@@ -62,6 +118,4 @@
   </form>
 </div>
 
-{{end}}
-
-{{ template "error" }}
+{{end}} {{ template "error" }}
