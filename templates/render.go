@@ -15,6 +15,7 @@ func Render(w http.ResponseWriter, t string, data interface{}) {
 		"base.layout.html",
 		"header.layout.html",
 		"footer.layout.html",
+		"error.html",
 	}
 
 	var templateSlice []string

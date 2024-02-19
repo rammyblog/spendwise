@@ -1,4 +1,6 @@
-{{template "base" .}} {{define "content"}}
+{{template "base" .}} 
+
+{{define "content"}}
 <div class="flex items-center justify-center h-screen">
   <div class="bg-white p-8 -md w-80">
     <button
@@ -9,8 +11,13 @@
       <span>Sign up with Google</span>
     </button>
     <span class="text-sm text-gray-600"
-      >Already have an account? <a class="text-blue-400 underline" href="/login">Login</a></span
+      >Already have an account?
+      <a class="text-blue-400 underline" href="/login">Login</a></span
     >
   </div>
 </div>
-{{end}}
+
+{{end}} 
+
+
+{{ template "error" }}

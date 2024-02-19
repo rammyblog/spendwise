@@ -39,7 +39,8 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	parameters.Add("scope", strings.Join(config.OauthConf.Scopes, " "))
 	parameters.Add("redirect_uri", config.OauthConf.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("state", config.OauthStateStringGl)
+	referer := r.Header.Get("Referer")
+	parameters.Add("state", "referer="+referer+"?state="+config.OauthStateStringGl)
 	URL.RawQuery = parameters.Encode()
 	url := URL.String()
 	w.Header().Set("HX-Redirect", url)
@@ -51,7 +52,7 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 
 	state := r.FormValue("state")
 
-	if state != config.OauthStateStringGl {
+	if !strings.Contains(state, config.OauthStateStringGl) {
 		log.Printf("invalid oauth state, expected " + config.OauthStateStringGl + ", got " + state + "\n")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
@@ -61,13 +62,11 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 
 	if code == "" {
 		log.Print("Code not found..")
-		w.Write([]byte("Code Not Found to provide AccessToken..\n"))
 		reason := r.FormValue("error_reason")
 		if reason == "user_denied" {
 			w.Write([]byte("User has denied Permission.."))
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		}
-
 	} else {
 		ctx := context.Background()
 		token, err := config.OauthConf.Exchange(ctx, code)
@@ -87,38 +86,52 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// write access token and refresh token to cookie
-		utils.SetCookie(w, "access_token", token.AccessToken, token.Expiry)
-		utils.SetCookie(w, "refresh_token", token.RefreshToken, token.Expiry)
-
 		// Get the user repository
-		userRepo := repositories.NewUserRepository(config.DB)
-		user := &models.User{
-			Email:         response.Email,
-			FirstName:     response.GivenName,
-			LastName:      response.FamilyName,
-			Picture:       response.Picture,
-			Provider:      "google",
-			EmailVerified: response.EmailVerified,
-			ProviderID:    response.Sub,
+
+		isLogin := strings.Contains(state, "login")
+
+		isRegister := strings.Contains(state, "signup")
+
+		if isLogin {
+			userRepo := repositories.NewUserRepository(config.DB)
+			user, err := userRepo.FindByEmail(response.Email)
+			if err != nil {
+				log.Print("User not found: " + err.Error() + "\n")
+				utils.SetCookie(w, "errorSw", "user not found", time.Now().Add(10*time.Second))
+				http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+			}
+
+			// write access token and refresh token to cookie
+			utils.SetCookie(w, "usw", user.ID.String(), token.Expiry)
+			utils.SetCookie(w, "access_token", token.AccessToken, token.Expiry)
+			utils.SetCookie(w, "refresh_token", token.RefreshToken, token.Expiry)
+			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+
 		}
-		err = userRepo.Create(user)
 
-		if err != nil {
-			if strings.Contains(err.Error(), `duplicate key value violates unique constraint "users_email_key"`) {
-				newUser := &models.User{
-					FirstName:     response.GivenName,
-					LastName:      "ooop",
-					Picture:       response.Picture,
-					EmailVerified: response.EmailVerified,
-					ProviderID:    response.Sub,
-				}
-				err = userRepo.Update(response.Email, newUser)
-				if err != nil {
-					log.Printf("We got here: %v", err)
-					http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		if isRegister {
+			userRepo := repositories.NewUserRepository(config.DB)
+			user := &models.User{
+				Email:         response.Email,
+				FirstName:     response.GivenName,
+				LastName:      response.FamilyName,
+				Picture:       response.Picture,
+				Provider:      "google",
+				EmailVerified: response.EmailVerified,
+				ProviderID:    response.Sub,
+			}
+			err = userRepo.Create(user)
 
+			if err != nil {
+				if strings.Contains(err.Error(), `duplicate key value violates unique constraint "users_email_key"`) {
+					// user already exists
+					utils.SetCookie(w, "errorSw", "user already exist, kindly login", time.Now().Add(20*time.Second))
+					http.Redirect(w, r, "/signup", http.StatusTemporaryRedirect)
+					return
 				}
+				log.Print("Error creating user: " + err.Error() + "\n")
+				utils.SetCookie(w, "errorSw", "Error creating user", time.Now().Add(10*time.Second))
+				http.Redirect(w, r, "/signup", http.StatusTemporaryRedirect)
 			}
 		}
 

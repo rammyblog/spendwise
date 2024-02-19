@@ -1,12 +1,14 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rammyblog/spendwise/controller"
 	"github.com/rammyblog/spendwise/templates"
+	"github.com/rammyblog/spendwise/utils"
 )
 
 func router() *chi.Mux {
@@ -28,12 +30,33 @@ func router() *chi.Mux {
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		templates.Render(w, "login.html", nil)
+		errorMsg, err := utils.GetAndDeleteCookie(w, r, "errorSw")
+		if err != nil {
+			log.Println("Error getting cookie: ", err)
+		}
+		var data struct {
+			Error string
+		}
+
+		data.Error = errorMsg
+		templates.Render(w, "login.html", data)
 	})
 	r.Get("/signup", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		templates.Render(w, "signup.html", nil)
+		errorMsg, err := utils.GetAndDeleteCookie(w, r, "errorSw")
+
+		if err != nil {
+			log.Println("Error getting cookie: ", err)
+		}
+
+		var data struct {
+			Error string
+		}
+
+		data.Error = errorMsg
+
+		templates.Render(w, "signup.html", data)
 	})
 	r.Post("/handle-login", controller.HandleGoogleLogin)
 	r.Get("/callback-google", controller.CallBackFromGoogle)
