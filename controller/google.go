@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -49,7 +50,7 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 
 func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 	config := config.GlobalConfig
-
+	fmt.Println(r.URL.Query(), "query")
 	state := r.FormValue("state")
 
 	if !strings.Contains(state, config.OauthStateStringGl) {
@@ -103,9 +104,8 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 
 			// write access token and refresh token to cookie
 			utils.SetCookie(w, "usw", user.ID.String(), token.Expiry)
-			utils.SetCookie(w, "access_token", token.AccessToken, token.Expiry)
-			utils.SetCookie(w, "refresh_token", token.RefreshToken, token.Expiry)
-			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			utils.SetCookie(w, "swAccess", token.AccessToken, token.Expiry)
+			http.Redirect(w, r, "/dashboard", http.StatusTemporaryRedirect)
 
 		}
 
@@ -133,6 +133,10 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 				utils.SetCookie(w, "errorSw", "Error creating user", time.Now().Add(10*time.Second))
 				http.Redirect(w, r, "/signup", http.StatusTemporaryRedirect)
 			}
+			utils.SetCookie(w, "usw", user.ID.String(), token.Expiry)
+			utils.SetCookie(w, "swAccess", token.AccessToken, token.Expiry)
+			http.Redirect(w, r, "/dashboard", http.StatusTemporaryRedirect)
+
 		}
 
 		// redirect to the home page

@@ -11,6 +11,11 @@ import (
 	"github.com/rammyblog/spendwise/utils"
 )
 
+type TemplateData struct {
+	Error string
+	Data  interface{}
+}
+
 func router() *chi.Mux {
 
 	r := chi.NewRouter()
@@ -19,8 +24,8 @@ func router() *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
 
-	fs := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static", fs))
+	fs := http.FileServer(http.Dir("./static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -60,6 +65,34 @@ func router() *chi.Mux {
 	})
 	r.Post("/handle-login", controller.HandleGoogleLogin)
 	r.Get("/callback-google", controller.CallBackFromGoogle)
+
+	r.Get("/dashboard", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		templates.Render(w, "dashboard.html", nil)
+	})
+
+	r.Get("/dashboard/add-expense", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		data := TemplateData{}
+		categories, err := controller.GetCategories()
+		if err != nil {
+			data.Error = "Error getting categories"
+			log.Println("Error getting categories: ", err)
+			templates.Render(w, "add-expense.html", data)
+			return
+		}
+		data.Data = categories
+		errorMsg, err := utils.GetAndDeleteCookie(w, r, "errorSw")
+		if err != nil {
+			log.Println("Error getting cookie: ", err)
+		}
+		data.Error = errorMsg
+		templates.Render(w, "add-expense.html", data)
+	})
+
+	r.Post("/dashboard/add-expense", controller.AddExpense)
 
 	return r
 }

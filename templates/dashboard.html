@@ -1,0 +1,46 @@
+{{template "base" .}} {{define "content"}}
+
+<!-- Navigation -->
+<nav class="bg-blue-500 p-4 text-white">
+  <div class="container mx-auto">
+    <h1 class="text-3xl font-semibold">Expense Tracker</h1>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mx-auto mt-8">
+  <!-- Grid Layout -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Expense Summary -->
+    <div class="bg-white p-6 rounded-md shadow-md text-center">
+      <h2 class="text-lg font-semibold mb-4 text-blue-500">Expense Summary</h2>
+      <p class="text-3xl font-bold text-gray-800">$500</p>
+      <p class="text-sm text-gray-500">Budget Remaining: $300</p>
+    </div>
+
+    <!-- Expense List -->
+    <div class="bg-white p-6 rounded-md shadow-md">
+      <h2 class="text-lg font-semibold mb-4 text-blue-500">Expense List</h2>
+      <ul>
+        <li class="flex justify-between items-center mb-2">
+          <span class="text-gray-700">Shopping</span>
+          <span class="text-red-500">-$50</span>
+        </li>
+        <li class="flex justify-between items-center mb-2">
+          <span class="text-gray-700">Utilities</span>
+          <span class="text-red-500">-$100</span>
+        </li>
+        <!-- Add more expense items as needed -->
+      </ul>
+    </div>
+
+    <!-- Budget Chart -->
+    <div class="bg-white p-6 rounded-md shadow-md">
+      <h2 class="text-lg font-semibold mb-4 text-blue-500">Budget Chart</h2>
+      <div class="bg-blue-200 h-24 rounded-md"></div>
+      <!-- You can use a chart library here for a more dynamic chart -->
+    </div>
+  </div>
+</div>
+
+{{end}}

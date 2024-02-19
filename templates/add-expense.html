@@ -1,0 +1,67 @@
+{{template "base" .}} {{define "content"}}
+
+<!-- Navigation -->
+<nav class="bg-blue-500 p-4 text-white">
+  <div class="container mx-auto">
+    <h1 class="text-3xl font-semibold">Expense Tracker</h1>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mx-auto mt-8">
+  <div class="h3">Add new transaction</div>
+
+  <form action="/dashboard/add-expense" method="post">
+    <label for="name">Name</label>
+    <input
+      type="text"
+      name="name"
+      id="name"
+      class="w-full border p-2 mb-4"
+      required
+    />
+
+    <label for="amount">Amount</label>
+    <input
+      type="number"
+      name="amount"
+      id="amount"
+      class="w-full border p-2 mb-4"
+      required
+    />
+
+    <label for="category">Category</label>
+    <select name="category_id" id="category" class="w-full border p-2 mb-4">
+      {{ range .Data }}
+      <option value="{{.ID}}">{{.Name}}</option>
+      {{end}}
+    </select>
+
+    <label for="date">Date</label>
+    <input
+      type="date"
+      name="expense_date"
+      id="date"
+      class="w-full border p-2 mb-4"
+      required
+    />
+
+    <label for="decription">Notes</label>
+    <textarea
+      name="description"
+      id="description"
+      class="w-full border p-2 mb-4"
+    ></textarea>
+
+    <button
+      type="submit"
+      class="bg-blue-500 text-white p-2 rounded-sm w-20 hover:bg-slate-700"
+    >
+      Add
+    </button>
+  </form>
+</div>
+
+{{end}}
+
+{{ template "error" }}
