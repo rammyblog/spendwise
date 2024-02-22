@@ -14,7 +14,16 @@
     >
   </div>
 </div>
+{{end}} {{define "js"}}
+<script src="../static/js/Toast.min.js"></script>
+<script>
+
+  var swErrorMessage = {{ .Error }};
+  if (swErrorMessage) {
+    new Toast({
+      message: swErrorMessage,
+      type: 'danger'
+    });
+  }
+</script>
 {{end}}
-
-
-{{ template "error" }}

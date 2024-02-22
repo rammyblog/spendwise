@@ -2,6 +2,7 @@ package templates
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -10,12 +11,14 @@ import (
 var templateFS embed.FS
 
 func Render(w http.ResponseWriter, t string, data interface{}) {
-
+	fmt.Println("Rendering template: ", t)
+	fmt.Println("Data: ", data)
 	partials := []string{
 		"base.layout.html",
 		"header.layout.html",
 		"footer.layout.html",
-		"error.html",
+		// "error.html",
+		"nav.html",
 	}
 
 	var templateSlice []string

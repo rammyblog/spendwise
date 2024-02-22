@@ -1,15 +1,24 @@
-{{template "base" .}} {{define "content"}}
-
-<!-- Navigation -->
-<nav class="bg-blue-500 p-4 text-white">
-  <div class="container mx-auto">
-    <h1 class="text-3xl font-semibold">Expense Tracker</h1>
-  </div>
-</nav>
-
+{{template "base" .}} {{ define "navigation" }} {{template "nav"}} {{end}}
+{{define "content"}}
 <!-- Main Content -->
-<div class="container mx-auto mt-8">
+<div class="container mx-auto mt-8" id="#dashboard-home">
   <!-- Grid Layout -->
+  <!-- Modal toggle -->
+  <div class="flex justify-center m-5">
+    <button
+      id="defaultModalButton"
+      data-modal-target="addExpenseModal"
+      data-modal-toggle="addExpenseModal"
+      class="block text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+      type="button"
+      hx-swap="innerHTML"
+      hx-target="#addExpenseModal"
+      hx-get="/dashboard/add-expense"
+    >
+      Add an Expense
+    </button>
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <!-- Expense Summary -->
     <div class="bg-white p-6 rounded-md shadow-md text-center">
@@ -40,6 +49,11 @@
       <div class="bg-blue-200 h-24 rounded-md"></div>
       <!-- You can use a chart library here for a more dynamic chart -->
     </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="addExpenseModal">
+    <!-- Modal content will be inserted here -->
   </div>
 </div>
 

@@ -19,6 +19,7 @@
   border-left-width: 5px;
   border-radius: 4px;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
+  color: #000;
 }
 .toastjs.default {
   border-left-color: #aaa;
