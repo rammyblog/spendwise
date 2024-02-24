@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,10 +20,8 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Println("Error decoding form: ", err)
-		data := map[string]string{
-			"Error": "Error adding expense",
-		}
-		templates.Render(w, "add-expense.html", data)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
 		return
 	}
 
@@ -29,10 +29,8 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&expense, r.PostForm)
 	if err != nil {
 		log.Println("Error decoding form: ", err)
-		data := map[string]string{
-			"Error": "Error adding expense",
-		}
-		templates.Render(w, "add-expense.html", data)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
 		return
 	}
 
@@ -40,10 +38,8 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println("Error getting user id: ", err)
-		data := map[string]string{
-			"Error": "Error adding expense",
-		}
-		templates.Render(w, "add-expense.html", data)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
 		return
 	}
 	expense.UserID = userId
@@ -52,17 +48,38 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	err = expenseRepo.Create(&expense)
 	if err != nil {
 		log.Println("Error adding expense: ", err)
-		data := map[string]string{
-			"Error": "Error adding expense",
-		}
-		templates.Render(w, "add-expense.html", data)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]string{
-		"Message": "Expense added successfully",
-		"Link":    "/dashboard/add-expense/1",
+	data := map[string]interface{}{
+		"message": "Expense added successfully",
+		"link":    fmt.Sprintf("/dashboard/add-expense/%v", expense.ID),
 	}
-	templates.Render(w, "add-expense.html", data)
 
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(data)
+
+}
+
+func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
+	data := map[string]interface{}{}
+	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
+	userId, err := utils.GetCookie(r, "usw")
+	if err != nil {
+		log.Println("Error getting user id: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
+		return
+	}
+	expenses, err := expenseRepo.FindByUserID(userId, limit)
+	if err != nil {
+		log.Println("Error getting expenses: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
+		return
+	}
+	data["Expenses"] = expenses
+	templates.Render(w, "dashboard.html", data, true)
 }

@@ -12,11 +12,6 @@ import (
 	"github.com/rammyblog/spendwise/utils"
 )
 
-type TemplateData struct {
-	Error string
-	Data  interface{}
-}
-
 func router() *chi.Mux {
 
 	r := chi.NewRouter()
@@ -31,30 +26,23 @@ func router() *chi.Mux {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		templates.Render(w, "index.html", nil)
+		templates.Render(w, "index.html", nil, true)
 	})
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		errorMsg, err := utils.GetAndDeleteCookie(w, r, "errorSw")
-		if err != nil {
-			log.Println("Error getting cookie: ", err)
-		}
+		errorMsg, _ := utils.GetCookie(r, "errorSw")
 		var data struct {
 			Error string
 		}
 
 		data.Error = errorMsg
-		templates.Render(w, "login.html", data)
+		templates.Render(w, "login.html", data, true)
 	})
 	r.Get("/signup", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		errorMsg, err := utils.GetAndDeleteCookie(w, r, "errorSw")
-
-		if err != nil {
-			log.Println("Error getting cookie: ", err)
-		}
+		errorMsg, _ := utils.GetCookie(r, "errorSw")
 
 		var data struct {
 			Error string
@@ -62,7 +50,7 @@ func router() *chi.Mux {
 
 		data.Error = errorMsg
 
-		templates.Render(w, "signup.html", data)
+		templates.Render(w, "signup.html", data, true)
 	})
 	r.Post("/handle-login", controller.HandleGoogleLogin)
 	r.Get("/callback-google", controller.CallBackFromGoogle)
@@ -70,29 +58,26 @@ func router() *chi.Mux {
 	r.Group(func(r chi.Router) {
 		r.Use(localMiddleware.IsAuthenticated)
 		r.Get("/dashboard", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-			templates.Render(w, "dashboard.html", nil)
+			controller.Dashboard(w, r, 5)
 		})
 
 		r.Get("/dashboard/add-expense", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
-			data := TemplateData{}
+			data := map[string]interface{}{
+				"Message": "",
+				"Link":    "",
+				"Error":   "",
+			}
 			categories, err := controller.GetCategories()
 			if err != nil {
-				data.Error = "Error getting categories"
+				data["Error"] = "Error getting categories"
 				log.Println("Error getting categories: ", err)
-				templates.Render(w, "add-expense.html", data)
+				templates.Render(w, "add-expense.html", data, false)
 				return
 			}
-			data.Data = categories
-			errorMsg, err := utils.GetAndDeleteCookie(w, r, "errorSw")
-			if err != nil {
-				log.Println("Error getting cookie: ", err)
-			}
-			data.Error = errorMsg
-			templates.Render(w, "add-expense.html", data)
+			data["Categories"] = categories
+			templates.Render(w, "add-expense.html", data, false)
 		})
 
 		r.Post("/dashboard/add-expense", controller.AddExpense)

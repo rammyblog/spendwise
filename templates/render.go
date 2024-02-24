@@ -10,15 +10,29 @@ import (
 //go:embed *
 var templateFS embed.FS
 
-func Render(w http.ResponseWriter, t string, data interface{}) {
-	fmt.Println("Rendering template: ", t)
-	fmt.Println("Data: ", data)
+func Render(w http.ResponseWriter, t string, data interface{}, renderBase bool) {
 	partials := []string{
 		"base.layout.html",
 		"header.layout.html",
 		"footer.layout.html",
 		// "error.html",
 		"nav.html",
+	}
+
+	if !renderBase {
+		fmt.Println("Rendering without base", t)
+		tmpl, err := template.ParseFS(templateFS, t)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := tmpl.Execute(w, data); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+
 	}
 
 	var templateSlice []string

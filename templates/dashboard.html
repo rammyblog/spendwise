@@ -2,59 +2,70 @@
 {{define "content"}}
 <!-- Main Content -->
 <div class="container mx-auto mt-8" id="#dashboard-home">
-  <!-- Grid Layout -->
-  <!-- Modal toggle -->
   <div class="flex justify-center m-5">
     <button
       id="defaultModalButton"
-      data-modal-target="addExpenseModal"
-      data-modal-toggle="addExpenseModal"
-      class="block text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+      class="text-white border border-white bg-gray-800 inline-flex items-center hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
       type="button"
-      hx-swap="innerHTML"
       hx-target="#addExpenseModal"
       hx-get="/dashboard/add-expense"
+      hx-swap="innerHTML"
     >
+      <svg
+        class="mr-1 -ml-1 w-6 h-6"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+          clip-rule="evenodd"
+        ></path>
+      </svg>
       Add an Expense
     </button>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <!-- Expense Summary -->
-    <div class="bg-white p-6 rounded-md shadow-md text-center">
-      <h2 class="text-lg font-semibold mb-4 text-blue-500">Expense Summary</h2>
-      <p class="text-3xl font-bold text-gray-800">$500</p>
-      <p class="text-sm text-gray-500">Budget Remaining: $300</p>
+    <div
+      class="p-6 rounded-md shadow-md text-center text-white bg-gray-800 border"
+    >
+      <h2 class="text-lg font-semibold mb-4">Expense Summary</h2>
+      <p class="text-3xl font-bold">$500</p>
+      <!-- <p class="text-sm">Budget Remaining: $300</p> -->
     </div>
 
     <!-- Expense List -->
     <div class="bg-white p-6 rounded-md shadow-md">
-      <h2 class="text-lg font-semibold mb-4 text-blue-500">Expense List</h2>
+      <h2 class="text-lg font-semibold mb-4">Expense List</h2>
       <ul>
+        {{ range .Expenses }}
+
         <li class="flex justify-between items-center mb-2">
-          <span class="text-gray-700">Shopping</span>
-          <span class="text-red-500">-$50</span>
+          <a href="/dashboard/{{.ID}}" class="text-gray-700">{{.Name}}</a>
+          <span class="text-red-500">-${{ .Amount }}</span>
         </li>
-        <li class="flex justify-between items-center mb-2">
-          <span class="text-gray-700">Utilities</span>
-          <span class="text-red-500">-$100</span>
-        </li>
-        <!-- Add more expense items as needed -->
+        {{end}}
       </ul>
+      <a href="/dashboard/expenses" class="text-blue-500">View all expenses</a>
     </div>
 
     <!-- Budget Chart -->
     <div class="bg-white p-6 rounded-md shadow-md">
-      <h2 class="text-lg font-semibold mb-4 text-blue-500">Budget Chart</h2>
+      <h2 class="text-lg font-semibold mb-4">Budget Chart</h2>
       <div class="bg-blue-200 h-24 rounded-md"></div>
       <!-- You can use a chart library here for a more dynamic chart -->
     </div>
   </div>
 
   <!-- Modal -->
-  <div id="addExpenseModal">
-    <!-- Modal content will be inserted here -->
-  </div>
+  <div id="addExpenseModal"></div>
 </div>
 
-{{end}}
+{{end}} {{define "js"}}
+
+<script src="../static/js/toast.min.js"></script>
+
+{{ end }}
