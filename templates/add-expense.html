@@ -43,7 +43,7 @@
         hx-post="/dashboard/add-expense"
         hx-trigger="submit"
         hx-disabled-elt="#add-expense-button"
-        hx-swap="none"
+        hx-swap="outerHTML"
       >
         <div class="grid gap-4 mb-4 sm:grid-cols-2">
           <div>
@@ -159,20 +159,10 @@
   function handleSuccess(event) {
     event.preventDefault();
     if (event.detail.xhr && event.detail.xhr.status === 201) {
-      var response = JSON.parse(event.detail.xhr.response);
-      new Toast({
-        message: response.message,
-        type: 'success',
-        customButtons: [
-          {
-            text: 'View Expense',
-            onClick: function () {
-              window.location.href = response.link;
-            },
-          },
-        ],
-      });
       document.querySelector('#cancelButton').click();
+      document.querySelector('#expense-stats').innerHTML =
+        event.detail.xhr.response;
+      return;
     }
   }
 
@@ -181,6 +171,6 @@
   document
     .querySelector('#cancelButton')
     .addEventListener('click', function () {
-      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('addExpenseModal').innerHTML = '';
     });
 </script>

@@ -8,10 +8,16 @@ import (
 )
 
 type MaxAmountForCategory struct {
-	Category string
-	Amount   float64
-	UserID   string
+	CategoryName string
+	Amount       float64
 }
+
+type TotalAmountForCategory struct {
+	CategoryName string  `json:"category_name"`
+	TotalAmount  float64 `json:"total_amount"`
+	CategoryID   string `json:"category_id"`
+}
+
 type ExpenseRepository struct {
 	db *gorm.DB
 }
@@ -66,21 +72,39 @@ func (repo *ExpenseRepository) FindByCategory(categoryId string) ([]models.Expen
 	return expenses, err
 }
 
-func (repo *ExpenseRepository) GetExpenseSummary(userID string) (MaxAmountForCategory, float64, float64) {
+func (repo *ExpenseRepository) GetExpenseSummary(userID string) (MaxAmountForCategory, float64, float64, []TotalAmountForCategory) {
 
 	var expenseForAMonth float64
 	var totalExpenses float64
 
-	var result MaxAmountForCategory
-	subQuery := repo.db.Table("expenses").
-		Select("MAX(amount) as amount").
-		Where("user_id = ?", userID)
+	var maxAmountForCategory MaxAmountForCategory
+	var totalAmountPerCategory []TotalAmountForCategory
 
-	// Define the main query
-	repo.db.Table("expenses").
-		Select("amount, category").
-		Where("amount = (?) AND user_id = ?", subQuery, userID).
-		First(&result)
+	sqlForMaxAmount := `
+	SELECT e.id AS expense_id, e.amount, e.category_id, c.name AS category_name, e.user_id
+	FROM expenses e
+	JOIN (
+		SELECT category_id, MAX(amount) AS max_amount
+		FROM expenses
+		WHERE user_id = ?
+		GROUP BY category_id
+		ORDER BY max_amount DESC
+		LIMIT 1
+	) t ON e.category_id = t.category_id AND e.amount = t.max_amount
+	JOIN categories c ON e.category_id = c.id
+`
+
+	sqlForCategoryAndExpenses := `	SELECT c.id AS category_id, c.name AS category_name, SUM(e.amount) AS total_amount
+	FROM expenses e
+	JOIN categories c ON e.category_id = c.id
+	WHERE e.user_id = ?
+	GROUP BY c.id, c.name
+	ORDER BY total_amount DESC
+`
+
+	repo.db.Raw(sqlForMaxAmount, userID).Scan(&maxAmountForCategory)
+	repo.db.Raw(sqlForCategoryAndExpenses, userID).Scan(&totalAmountPerCategory)
+
 	// Get the current time
 	now := time.Now()
 
@@ -89,9 +113,8 @@ func (repo *ExpenseRepository) GetExpenseSummary(userID string) (MaxAmountForCat
 
 	// Get the first day of the next month
 	firstOfNextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location())
-
 	repo.db.Table("expenses").Select("sum(amount)").Where("expense_date >= ? AND expense_date < ? AND user_id = ?", firstOfMonth, firstOfNextMonth, userID).Row().Scan(&expenseForAMonth)
 	repo.db.Table("expenses").Select("sum(amount)").Where("user_id = ?", userID).Row().Scan(&totalExpenses)
 
-	return result, expenseForAMonth, totalExpenses
+	return maxAmountForCategory, expenseForAMonth, totalExpenses, totalAmountPerCategory
 }

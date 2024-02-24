@@ -81,6 +81,8 @@ func router() *chi.Mux {
 		})
 
 		r.Post("/dashboard/add-expense", controller.AddExpense)
+
+		r.Get("/dashboard/expense-graph", controller.ExpenseGraph)
 	})
 
 	return r

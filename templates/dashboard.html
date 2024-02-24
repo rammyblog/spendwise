@@ -1,7 +1,9 @@
-{{template "base" .}} {{ define "navigation" }} {{template "nav"}} {{end}}
-{{define "content"}}
+{{template "base" .}} {{ define "headerLinks"}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ end }} {{ define "navigation" }} {{template "nav"}} {{end}} {{define
+"content"}}
 <!-- Main Content -->
-<div class="container mx-auto mt-8" id="#dashboard-home">
+<div class="container mx-auto mt-8" id="#dashboard-home" id="#dashboard">
   <div class="flex justify-center m-5">
     <button
       id="defaultModalButton"
@@ -27,40 +29,8 @@
     </button>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <!-- Expense Summary -->
-    <div
-      class="p-6 rounded-md shadow-md text-center text-white bg-gray-800 border"
-    >
-      <h2 class="text-lg font-semibold mb-4">Expense Summary</h2>
-      <p class="text-3xl font-bold">${{.TotalExpenses}}</p>
-      <p class="text-sm">Expenses this month: ${{.ExpenseForAMonth}}</p>
-      <p class="text-sm">
-        You spent most on {{ .MaxCategory}}: ${{.MaxAmount}}
-      </p>
-    </div>
-
-    <!-- Expense List -->
-    <div class="bg-white p-6 rounded-md shadow-md">
-      <h2 class="text-lg font-semibold mb-4">Expense List</h2>
-      <ul>
-        wit {{ range .Expenses }}
-
-        <li class="flex justify-between items-center mb-2">
-          <a href="/dashboard/{{.ID}}" class="text-gray-700">{{.Name}}</a>
-          <span class="text-red-500">-${{ .Amount }}</span>
-        </li>
-        {{end}}
-      </ul>
-      <a href="/dashboard/expenses" class="text-blue-500">View all expenses</a>
-    </div>
-
-    <!-- Budget Chart -->
-    <div class="bg-white p-6 rounded-md shadow-md">
-      <h2 class="text-lg font-semibold mb-4">Budget Chart</h2>
-      <div class="bg-blue-200 h-24 rounded-md"></div>
-      <!-- You can use a chart library here for a more dynamic chart -->
-    </div>
+  <div id="expense-stats" hx-target="#expense-stats" hx-swap="outerHTML">
+    {{ template "expense-stats-grid.html" . }}
   </div>
 
   <!-- Modal -->
@@ -70,5 +40,6 @@
 {{end}} {{define "js"}}
 
 <script src="../static/js/toast.min.js"></script>
+
 
 {{ end }}

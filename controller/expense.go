@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -53,14 +51,50 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]interface{}{
-		"message": "Expense added successfully",
-		"link":    fmt.Sprintf("/dashboard/add-expense/%v", expense.ID),
-	}
+	// data := map[string]interface{}{
+	// 	"message": "Expense added successfully",
+	// 	"link":    fmt.Sprintf("/dashboard/add-expense/%v", expense.ID),
+	// }
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(data)
+	w.Header().Set("HX-Trigger", "movieListChanged")
+	// json.NewEncoder(w).Encode(data)
 
+	data := map[string]interface{}{}
+
+	expenses, err := expenseRepo.FindByUserID(userId, 5)
+	if err != nil {
+		log.Println("Error getting expenses: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
+		return
+	}
+	maxAmountForCategory, expenseForAMonth, totalExpenses, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
+	data["MaxAmountForCategory"] = maxAmountForCategory
+	data["ExpenseForAMonth"] = expenseForAMonth
+	data["TotalExpenses"] = totalExpenses
+	data["Expenses"] = expenses
+	data["MaxCategory"] = maxAmountForCategory.CategoryName
+	data["MaxAmount"] = maxAmountForCategory.Amount
+	data["ChartData"] = totalAmountPerCategory
+
+	templates.Render(w, "expense-stats-grid.html", data, false)
+}
+
+func ExpenseGraph(w http.ResponseWriter, r *http.Request) {
+	userId, err := utils.GetCookie(r, "usw")
+	if err != nil {
+		log.Println("Error getting user id: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
+		return
+	}
+	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
+	_, _, _, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
+	data := map[string]interface{}{
+		"ChartData": totalAmountPerCategory,
+	}
+	templates.Render(w, "pie.html", data, false)
 }
 
 func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
@@ -80,15 +114,14 @@ func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
 		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
 		return
 	}
-	maxAmountForCategory, expenseForAMonth, totalExpenses := expenseRepo.GetExpenseSummary(userId)
+	maxAmountForCategory, expenseForAMonth, totalExpenses, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
 	data["MaxAmountForCategory"] = maxAmountForCategory
 	data["ExpenseForAMonth"] = expenseForAMonth
 	data["TotalExpenses"] = totalExpenses
 	data["Expenses"] = expenses
-	data["MaxCategory"] = maxAmountForCategory.Category
+	data["MaxCategory"] = maxAmountForCategory.CategoryName
 	data["MaxAmount"] = maxAmountForCategory.Amount
-	fmt.Println(data["ExpenseForAMonth"], "ExpenseForAMonth")
-	fmt.Println(data["MaxCategory"], "TotalExpenses")
+	data["ChartData"] = totalAmountPerCategory
 
 	templates.Render(w, "dashboard.html", data, true)
 }

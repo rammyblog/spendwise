@@ -1,0 +1,48 @@
+<canvas alt="Expense Chart" id="expenseChart" width="400" height="200"></canvas>
+
+<script>
+   // Function to create Chart.js chart
+
+   function createChart() {
+     const data = {{ .ChartData  }};
+
+     const labels = data.map((entry) => entry.category_name);
+     const amounts = data.map((entry) => entry.total_amount);
+     // Generate random background colors dynamically
+     const randomColors = Array.from(
+       { length: labels.length },
+       () =>
+         `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(
+           Math.random() * 256
+         )}, ${Math.floor(Math.random() * 256)}, 0.8)`
+     );
+
+     const ctx = document.getElementById('expenseChart').getContext('2d');
+     const myChart = new Chart(ctx, {
+       type: 'pie',
+       data: {
+         labels: labels,
+         datasets: [
+           {
+             data: amounts,
+             backgroundColor: randomColors,
+             borderWidth: 1,
+             hoverOffset: 4,
+           },
+         ],
+       },
+       options: {
+         plugins: {
+           legend: {
+             labels: {
+               color: '#fff',
+             },
+           },
+         },
+       },
+     });
+   }
+
+   // Call the createChart function when the page loads
+  createChart();
+</script>

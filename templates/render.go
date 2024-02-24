@@ -15,8 +15,9 @@ func Render(w http.ResponseWriter, t string, data interface{}, renderBase bool) 
 		"base.layout.html",
 		"header.layout.html",
 		"footer.layout.html",
-		// "error.html",
+		"pie.html",
 		"nav.html",
+		"expense-stats-grid.html",
 	}
 
 	if !renderBase {

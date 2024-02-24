@@ -94,6 +94,7 @@ func CallBackFromGoogle(w http.ResponseWriter, r *http.Request) {
 		isRegister := strings.Contains(state, "signup")
 
 		if isLogin {
+			fmt.Println("Login")
 			userRepo := repositories.NewUserRepository(config.DB)
 			user, err := userRepo.FindByEmail(response.Email)
 			if err != nil {
