@@ -1,10 +1,17 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/rammyblog/spendwise/models"
 	"gorm.io/gorm"
 )
 
+type MaxAmountForCategory struct {
+	Category string
+	Amount   float64
+	UserID   string
+}
 type ExpenseRepository struct {
 	db *gorm.DB
 }
@@ -57,4 +64,34 @@ func (repo *ExpenseRepository) FindByCategory(categoryId string) ([]models.Expen
 	var expenses []models.Expense
 	err := repo.db.Where("category_id = ?", categoryId).Find(&expenses).Error
 	return expenses, err
+}
+
+func (repo *ExpenseRepository) GetExpenseSummary(userID string) (MaxAmountForCategory, float64, float64) {
+
+	var expenseForAMonth float64
+	var totalExpenses float64
+
+	var result MaxAmountForCategory
+	subQuery := repo.db.Table("expenses").
+		Select("MAX(amount) as amount").
+		Where("user_id = ?", userID)
+
+	// Define the main query
+	repo.db.Table("expenses").
+		Select("amount, category").
+		Where("amount = (?) AND user_id = ?", subQuery, userID).
+		First(&result)
+	// Get the current time
+	now := time.Now()
+
+	// Get the first day of the current month
+	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	// Get the first day of the next month
+	firstOfNextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, now.Location())
+
+	repo.db.Table("expenses").Select("sum(amount)").Where("expense_date >= ? AND expense_date < ? AND user_id = ?", firstOfMonth, firstOfNextMonth, userID).Row().Scan(&expenseForAMonth)
+	repo.db.Table("expenses").Select("sum(amount)").Where("user_id = ?", userID).Row().Scan(&totalExpenses)
+
+	return result, expenseForAMonth, totalExpenses
 }

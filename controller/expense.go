@@ -80,6 +80,15 @@ func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
 		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
 		return
 	}
+	maxAmountForCategory, expenseForAMonth, totalExpenses := expenseRepo.GetExpenseSummary(userId)
+	data["MaxAmountForCategory"] = maxAmountForCategory
+	data["ExpenseForAMonth"] = expenseForAMonth
+	data["TotalExpenses"] = totalExpenses
 	data["Expenses"] = expenses
+	data["MaxCategory"] = maxAmountForCategory.Category
+	data["MaxAmount"] = maxAmountForCategory.Amount
+	fmt.Println(data["ExpenseForAMonth"], "ExpenseForAMonth")
+	fmt.Println(data["MaxCategory"], "TotalExpenses")
+
 	templates.Render(w, "dashboard.html", data, true)
 }

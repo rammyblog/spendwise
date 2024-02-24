@@ -33,15 +33,18 @@
       class="p-6 rounded-md shadow-md text-center text-white bg-gray-800 border"
     >
       <h2 class="text-lg font-semibold mb-4">Expense Summary</h2>
-      <p class="text-3xl font-bold">$500</p>
-      <!-- <p class="text-sm">Budget Remaining: $300</p> -->
+      <p class="text-3xl font-bold">${{.TotalExpenses}}</p>
+      <p class="text-sm">Expenses this month: ${{.ExpenseForAMonth}}</p>
+      <p class="text-sm">
+        You spent most on {{ .MaxCategory}}: ${{.MaxAmount}}
+      </p>
     </div>
 
     <!-- Expense List -->
     <div class="bg-white p-6 rounded-md shadow-md">
       <h2 class="text-lg font-semibold mb-4">Expense List</h2>
       <ul>
-        {{ range .Expenses }}
+        wit {{ range .Expenses }}
 
         <li class="flex justify-between items-center mb-2">
           <a href="/dashboard/{{.ID}}" class="text-gray-700">{{.Name}}</a>
