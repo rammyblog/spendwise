@@ -1,15 +1,14 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/schema"
 	"github.com/rammyblog/spendwise/config"
+	"github.com/rammyblog/spendwise/middleware"
 	"github.com/rammyblog/spendwise/models"
 	"github.com/rammyblog/spendwise/repositories"
 	"github.com/rammyblog/spendwise/templates"
-	"github.com/rammyblog/spendwise/utils"
 )
 
 func AddExpense(w http.ResponseWriter, r *http.Request) {
@@ -17,56 +16,39 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
-		log.Println("Error decoding form: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
-		return
+		middleware.HandleError(w, err, "Error adding expense")
 	}
 
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(&expense, r.PostForm)
 	if err != nil {
-		log.Println("Error decoding form: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
-		return
+		middleware.HandleError(w, err, "Error adding expense")
+
 	}
 
-	userId, err := utils.GetCookie(r, "usw")
+	userId := r.Context().Value(middleware.UserIDKey).(string)
 
 	if err != nil {
-		log.Println("Error getting user id: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
-		return
+		middleware.HandleError(w, err, "Error adding expense")
+
 	}
 	expense.UserID = userId
 
 	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
 	err = expenseRepo.Create(&expense)
 	if err != nil {
-		log.Println("Error adding expense: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error adding expense"}`, http.StatusInternalServerError)
-		return
+		middleware.HandleError(w, err, "Error adding expense")
+
 	}
 
-	// data := map[string]interface{}{
-	// 	"message": "Expense added successfully",
-	// 	"link":    fmt.Sprintf("/dashboard/add-expense/%v", expense.ID),
-	// }
-
 	w.WriteHeader(http.StatusCreated)
-	// json.NewEncoder(w).Encode(data)
 
 	data := map[string]interface{}{}
 
 	expenses, err := expenseRepo.FindByUserID(userId, 5)
 	if err != nil {
-		log.Println("Error getting expenses: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
-		return
+		middleware.HandleError(w, err, "Error adding expense")
+
 	}
 	maxAmountForCategory, expenseForAMonth, totalExpenses, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
 	data["MaxAmountForCategory"] = maxAmountForCategory
@@ -81,13 +63,8 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 }
 
 func ExpenseGraph(w http.ResponseWriter, r *http.Request) {
-	userId, err := utils.GetCookie(r, "usw")
-	if err != nil {
-		log.Println("Error getting user id: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
-		return
-	}
+	userId := r.Context().Value(middleware.UserIDKey).(string)
+
 	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
 	_, _, _, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
 	data := map[string]interface{}{
@@ -99,19 +76,11 @@ func ExpenseGraph(w http.ResponseWriter, r *http.Request) {
 func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
 	data := map[string]interface{}{}
 	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
-	userId, err := utils.GetCookie(r, "usw")
-	if err != nil {
-		log.Println("Error getting user id: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
-		return
-	}
+	userId := r.Context().Value(middleware.UserIDKey).(string)
+
 	expenses, err := expenseRepo.FindByUserID(userId, limit)
 	if err != nil {
-		log.Println("Error getting expenses: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, `{"error": "Error getting expenses"}`, http.StatusInternalServerError)
-		return
+		middleware.HandleError(w, err, "Error getting expenses")
 	}
 	maxAmountForCategory, expenseForAMonth, totalExpenses, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
 	data["MaxAmountForCategory"] = maxAmountForCategory

@@ -57,6 +57,7 @@ func router() *chi.Mux {
 
 	r.Group(func(r chi.Router) {
 		r.Use(localMiddleware.IsAuthenticated)
+		r.Use(localMiddleware.GetUserIDMiddleware)
 		r.Get("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 			controller.Dashboard(w, r, 5)
 		})
