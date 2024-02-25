@@ -43,7 +43,9 @@
         hx-post="/dashboard/add-expense"
         hx-trigger="submit"
         hx-disabled-elt="#add-expense-button"
-        hx-swap="outerHTML"
+        hx-swap="innerHTML"
+        hx-target="#expense-stats"
+        id="add-expense-form"
       >
         <div class="grid gap-4 mb-4 sm:grid-cols-2">
           <div>
@@ -148,8 +150,11 @@
   </div>
 </div>
 <script>
+  var cancelButton = document.getElementById('cancelButton');
+  var modal = document.getElementById('addExpenseModal');
+
   function handleError(event) {
-    var error = JSON.parse(event.detail.xhr.response);
+    const error = JSON.parse(event.detail.xhr.response);
     new Toast({
       message: error.error,
       type: 'danger',
@@ -158,19 +163,27 @@
 
   function handleSuccess(event) {
     event.preventDefault();
-    if (event.detail.xhr && event.detail.xhr.status === 201) {
-      document.querySelector('#cancelButton').click();
-      document.querySelector('#expense-stats').innerHTML =
-        event.detail.xhr.response;
-      return;
+    if (
+      event.detail.xhr &&
+      event.detail.xhr.status === 201 &&
+      event.target.id === 'add-expense-form'
+    ) {
+      if (cancelButton) {
+        console.log(`Expense added successfully`);
+        new Toast({
+          message: 'Expense added successfully',
+          type: 'success',
+        });
+        modal && (modal.innerHTML = '');
+      }
     }
   }
 
   document.addEventListener('htmx:responseError', handleError);
-  document.addEventListener('htmx:afterOnLoad', handleSuccess);
-  document
-    .querySelector('#cancelButton')
-    .addEventListener('click', function () {
-      document.getElementById('addExpenseModal').innerHTML = '';
+  document.addEventListener('htmx:afterRequest', handleSuccess);
+  if (cancelButton) {
+    cancelButton.addEventListener('click', function () {
+      modal && (modal.innerHTML = '');
     });
+  }
 </script>

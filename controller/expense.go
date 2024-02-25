@@ -57,7 +57,6 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("HX-Trigger", "movieListChanged")
 	// json.NewEncoder(w).Encode(data)
 
 	data := map[string]interface{}{}

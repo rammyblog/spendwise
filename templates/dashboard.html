@@ -3,7 +3,7 @@
 {{ end }} {{ define "navigation" }} {{template "nav"}} {{end}} {{define
 "content"}}
 <!-- Main Content -->
-<div class="container mx-auto mt-8" id="#dashboard-home" id="#dashboard">
+<div class="container mx-auto mt-8" id="dashboard-home">
   <div class="flex justify-center m-5">
     <button
       id="defaultModalButton"
@@ -29,17 +29,10 @@
     </button>
   </div>
 
-  <div id="expense-stats" hx-target="#expense-stats" hx-swap="outerHTML">
-    {{ template "expense-stats-grid.html" . }}
-  </div>
-
   <!-- Modal -->
   <div id="addExpenseModal"></div>
+
+  <div id="expense-stats">{{ template "expense-stats-grid.html" . }}</div>
 </div>
 
-{{end}} {{define "js"}}
-
-<script src="../static/js/toast.min.js"></script>
-
-
-{{ end }}
+{{end}}
