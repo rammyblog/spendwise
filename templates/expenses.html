@@ -1,0 +1,10 @@
+{{template "base" .}} {{ define "navigation" }} {{template "nav"}} {{end}}
+{{define "content"}}
+
+<div id="expenses">
+  {{ template "expense-table.html" . }}
+  <!-- Modal -->
+</div>
+<div id="addExpenseModal"></div>
+
+{{ end }}

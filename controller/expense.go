@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/schema"
@@ -44,12 +45,24 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	data := map[string]interface{}{}
+	expensesPage := r.Header.Get("Expenses-Page")
+	fmt.Println(expensesPage, "expensesPage")
+
+	if expensesPage == "true" {
+		expenses, err := expenseRepo.FindByUserIDAndJoinCategory(userId, 10)
+		if err != nil {
+			middleware.HandleError(w, err, "Error getting expenses")
+		}
+		data["Expenses"] = expenses
+		templates.Render(w, "expense-table.html", data, false)
+		return
+	}
 
 	expenses, err := expenseRepo.FindByUserID(userId, 5)
 	if err != nil {
 		middleware.HandleError(w, err, "Error adding expense")
-
 	}
+
 	maxAmountForCategory, expenseForAMonth, totalExpenses, totalAmountPerCategory := expenseRepo.GetExpenseSummary(userId)
 	data["MaxAmountForCategory"] = maxAmountForCategory
 	data["ExpenseForAMonth"] = expenseForAMonth
@@ -92,4 +105,17 @@ func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
 	data["ChartData"] = totalAmountPerCategory
 
 	templates.Render(w, "dashboard.html", data, true)
+}
+
+func ExpenseList(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{}
+	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
+	userId := r.Context().Value(middleware.UserIDKey).(string)
+
+	expenses, err := expenseRepo.FindByUserIDAndJoinCategory(userId, 10)
+	if err != nil {
+		middleware.HandleError(w, err, "Error getting expenses")
+	}
+	data["Expenses"] = expenses
+	templates.Render(w, "expenses.html", data, true)
 }

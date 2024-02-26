@@ -7,6 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type ExpenseWithCategory struct {
+	models.Expense
+	CategoryName string `json:"category_name"`
+}
+
 type MaxAmountForCategory struct {
 	CategoryName string
 	Amount       float64
@@ -15,7 +20,7 @@ type MaxAmountForCategory struct {
 type TotalAmountForCategory struct {
 	CategoryName string  `json:"category_name"`
 	TotalAmount  float64 `json:"total_amount"`
-	CategoryID   string `json:"category_id"`
+	CategoryID   string  `json:"category_id"`
 }
 
 type ExpenseRepository struct {
@@ -64,6 +69,20 @@ func (repo *ExpenseRepository) FindByUserID(userID string, limit int) ([]models.
 	var expenses []models.Expense
 	err := repo.db.Where("user_id = ?", userID).Limit(limit).Find(&expenses).Error
 	return expenses, err
+}
+
+func (repo *ExpenseRepository) FindByUserIDAndJoinCategory(userID string, limit int) ([]ExpenseWithCategory, error) {
+	var expensesWithCategory []ExpenseWithCategory
+	// err := repo.db.Joins("Category").Where("user_id = ?", userID).Limit(limit).Find(&expensesWithCategory).Error
+	err := repo.db.Table("expenses").
+		Select("expenses.name, expenses.amount, expenses.id, expenses.expense_date, categories.name as category_name").
+		Joins("left join categories on categories.id = expenses.category_id").
+		Where("user_id = ?", userID).
+		Limit(limit).
+		Order("expenses.created_at desc").
+		Scan(&expensesWithCategory).Error
+
+	return expensesWithCategory, err
 }
 
 func (repo *ExpenseRepository) FindByCategory(categoryId string) ([]models.Expense, error) {

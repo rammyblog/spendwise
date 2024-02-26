@@ -19,6 +19,7 @@ func router() *chi.Mux {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
+	r.Use(middleware.RedirectSlashes)
 
 	fs := http.FileServer(http.Dir("./static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
@@ -30,6 +31,7 @@ func router() *chi.Mux {
 	})
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		
 		w.WriteHeader(http.StatusOK)
 		errorMsg, _ := utils.GetCookie(r, "errorSw")
 		var data struct {
@@ -84,6 +86,8 @@ func router() *chi.Mux {
 		r.Post("/dashboard/add-expense", controller.AddExpense)
 
 		r.Get("/dashboard/expense-graph", controller.ExpenseGraph)
+		r.Get("/dashboard/expenses", controller.ExpenseList)
+
 	})
 
 	return r

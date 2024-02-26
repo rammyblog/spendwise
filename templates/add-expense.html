@@ -44,8 +44,9 @@
         hx-trigger="submit"
         hx-disabled-elt="#add-expense-button"
         hx-swap="innerHTML"
-        hx-target="#expense-stats"
+        hx-target="#expenses"
         id="add-expense-form"
+        hx-headers='{"Expenses-Page": "true"}'
       >
         <div class="grid gap-4 mb-4 sm:grid-cols-2">
           <div>

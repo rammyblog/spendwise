@@ -11,6 +11,8 @@ import (
 var templateFS embed.FS
 
 func Render(w http.ResponseWriter, t string, data interface{}, renderBase bool) {
+	var templateSlice []string
+
 	partials := []string{
 		"base.layout.html",
 		"header.layout.html",
@@ -18,11 +20,14 @@ func Render(w http.ResponseWriter, t string, data interface{}, renderBase bool) 
 		"pie.html",
 		"nav.html",
 		"expense-stats-grid.html",
+		"row.html",
+		"expense-table.html",
 	}
 
 	if !renderBase {
-		fmt.Println("Rendering without base", t)
-		tmpl, err := template.ParseFS(templateFS, t)
+		templateSlice = append(templateSlice, t)
+		templateSlice = append(templateSlice, "row.html")
+		tmpl, err := template.ParseFS(templateFS, templateSlice...)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -36,7 +41,6 @@ func Render(w http.ResponseWriter, t string, data interface{}, renderBase bool) 
 
 	}
 
-	var templateSlice []string
 	templateSlice = append(templateSlice, t)
 
 	templateSlice = append(templateSlice, partials...)
