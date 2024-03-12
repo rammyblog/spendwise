@@ -18,9 +18,9 @@ func (repo *CategoryRepository) Create(category *models.Category) error {
 	return repo.db.Create(category).Error
 }
 
-func (repo *CategoryRepository) FindByID(id uuid.UUID) (*models.Category, error) {
+func (repo *CategoryRepository) FindByID(id string) (*models.Category, error) {
 	var category models.Category
-	err := repo.db.First(&category, id).Error
+	err := repo.db.Where("id = ?", id).First(&category).Error
 	return &category, err
 }
 

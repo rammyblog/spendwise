@@ -1,0 +1,39 @@
+{{template "base" .}} {{ define "navigation" }} {{template "nav"}} {{end}}
+{{define "content"}}
+
+<div id="single-expense">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+      Expense Details
+    </h1>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <p class="text-gray-600">Name:</p>
+      <p class="font-semibold">{{.Expense.Name}}</p>
+    </div>
+    <div>
+      <p class="text-gray-600">Date:</p>
+      <p class="font-semibold">{{.Expense.ExpenseDate}}</p>
+    </div>
+    <div>
+      <p class="text-gray-600">Category:</p>
+      <p class="font-semibold">{{.Category.Name}}</p>
+    </div>
+    <div>
+      <p class="text-gray-600">Amount:</p>
+      <p class="font-semibold">${{.Expense.Amount}}</p>
+    </div>
+    <div>
+      <p class="text-gray-600">Description:</p>
+      <p class="font-semibold">{{.Expense.Description}}</p>
+    </div>
+  </div>
+  <div class="mt-6">
+    <a href="#" class="text-blue-500 hover:underline">Edit</a>
+    <a href="#" class="ml-4 text-red-500 hover:underline">Delete</a>
+  </div>
+</div>
+
+{{ end }}

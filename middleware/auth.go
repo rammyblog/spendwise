@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/rammyblog/spendwise/config"
 	"github.com/rammyblog/spendwise/utils"
+	"golang.org/x/oauth2"
 )
 
 type contextKey struct {
@@ -14,28 +16,37 @@ type contextKey struct {
 
 var UserIDKey = &contextKey{"userID"}
 
-func IsAuthenticated(next http.Handler) http.Handler {
+func IsGoogleAuthenticated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accessToken, err := utils.GetCookie(r, "swAccess")
-		// TODO: need to fix this
-		if err != nil || accessToken == "" {
-			fmt.Println(err)
-			http.Redirect(w, r, "/login", http.StatusPermanentRedirect)
+		config := config.GlobalConfig
+
+		// Get the OAuth token from the request cookie.
+		cookie, err := utils.GetCookie(r, "swAccess")
+		fmt.Println(err, "err")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
-		next.ServeHTTP(w, r)
-	})
-}
+		_, err = config.OauthConf.TokenSource(context.Background(), &oauth2.Token{
+			AccessToken:  cookie,
+			TokenType:    "Bearer",
+			RefreshToken: "",
+		}).Token()
 
-func GetUserIDMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
 		userId, err := utils.GetCookie(r, "usw")
 		if err != nil {
 			HandleError(w, err, "Error getting user id")
+			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 		ctx := context.WithValue(r.Context(), UserIDKey, userId)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

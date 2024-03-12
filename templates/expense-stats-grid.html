@@ -14,7 +14,7 @@
 
   <!-- Expense List -->
   <div
-    class="p-6 rounded-md shadow-md text-center text-white bg-gray-800 border"
+    class="p-6 rounded-md shadow-md text-center text-white bg-gray-800 border relative"
   >
     <h2 class="text-lg font-semibold mb-4">Expense List</h2>
     <ul>
@@ -24,9 +24,17 @@
         <a href="/dashboard/{{.ID}}" class="text-white">{{.Name}}</a>
         <span class="text-red-500">-${{ .Amount }}</span>
       </li>
+      {{ else }}
+      <li class="flex justify-between items-center mb-2">
+        <span class="text-white">No expenses found.</span>
+      </li>
       {{end}}
     </ul>
-    <a href="/dashboard/expenses" class="text-blue-500">View all expenses</a>
+    <a
+      href="/dashboard/expenses"
+      class="text-blue-500 absolute bottom-2 left-0 right-0 mx-auto"
+      >View all expenses</a
+    >
   </div>
 
   <!-- Budget Chart -->
@@ -49,5 +57,3 @@
     />
   </div>
 </div>
-
-

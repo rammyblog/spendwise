@@ -21,8 +21,8 @@ func router() *chi.Mux {
 	r.Use(middleware.URLFormat)
 	r.Use(middleware.RedirectSlashes)
 
-	fs := http.FileServer(http.Dir("./static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+	fs := http.FileServer(http.Dir("static/"))
+    r.Handle("/*", http.StripPrefix("/", fs))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -31,7 +31,7 @@ func router() *chi.Mux {
 	})
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		
+
 		w.WriteHeader(http.StatusOK)
 		errorMsg, _ := utils.GetCookie(r, "errorSw")
 		var data struct {
@@ -58,8 +58,7 @@ func router() *chi.Mux {
 	r.Get("/callback-google", controller.CallBackFromGoogle)
 
 	r.Group(func(r chi.Router) {
-		r.Use(localMiddleware.IsAuthenticated)
-		r.Use(localMiddleware.GetUserIDMiddleware)
+		r.Use(localMiddleware.IsGoogleAuthenticated)
 		r.Get("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 			controller.Dashboard(w, r, 5)
 		})
@@ -87,6 +86,7 @@ func router() *chi.Mux {
 
 		r.Get("/dashboard/expense-graph", controller.ExpenseGraph)
 		r.Get("/dashboard/expenses", controller.ExpenseList)
+		r.Get("/dashboard/expenses/{id}", controller.ExpenseDetail)
 
 	})
 

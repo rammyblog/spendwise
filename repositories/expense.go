@@ -37,7 +37,7 @@ func (repo *ExpenseRepository) Create(expense *models.Expense) error {
 
 func (repo *ExpenseRepository) FindByID(id string) (*models.Expense, error) {
 	var expense models.Expense
-	err := repo.db.First(&expense, id).Error
+	err := repo.db.Where("id = ?", id).First(&expense).Error
 	return &expense, err
 }
 

@@ -13,6 +13,6 @@ type Expense struct {
 	Name        string    `schema:"name"`
 	Description string    `schema:"description"`
 	CategoryID  string    `schema:"category_id"`
-	ExpenseDate string    `schema:"expense_date"`
+	ExpenseDate time.Time `schema:"expense_date"`
 	CreatedAt   time.Time `schema:"created_at"`
 }

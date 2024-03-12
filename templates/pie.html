@@ -6,8 +6,8 @@
    function createChart() {
      const data = {{ .ChartData  }};
 
-     const labels = data.map((entry) => entry.category_name);
-     const amounts = data.map((entry) => entry.total_amount);
+     const labels = data?.map((entry) => entry.category_name) || ["expenses"];
+     const amounts = data?.map((entry) => entry.total_amount) || ["100"];
      // Generate random background colors dynamically
      const randomColors = Array.from(
        { length: labels.length },
@@ -15,7 +15,7 @@
          `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(
            Math.random() * 256
          )}, ${Math.floor(Math.random() * 256)}, 0.8)`
-     );
+     )  || ["#FF6384"];
 
      const ctx = document.getElementById('expenseChart').getContext('2d');
      const myChart = new Chart(ctx, {

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/gorilla/schema"
 	"github.com/rammyblog/spendwise/config"
 	"github.com/rammyblog/spendwise/middleware"
@@ -90,7 +92,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
 	data := map[string]interface{}{}
 	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
 	userId := r.Context().Value(middleware.UserIDKey).(string)
-
+	fmt.Println("userId: ", userId)
 	expenses, err := expenseRepo.FindByUserID(userId, limit)
 	if err != nil {
 		middleware.HandleError(w, err, "Error getting expenses")
@@ -118,4 +120,30 @@ func ExpenseList(w http.ResponseWriter, r *http.Request) {
 	}
 	data["Expenses"] = expenses
 	templates.Render(w, "expenses.html", data, true)
+}
+
+func ExpenseDetail(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{}
+	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
+	categtoryRepo := repositories.NewCategoryRepository(config.GlobalConfig.DB)
+	expenseId := chi.URLParam(r, "id")
+	expense, err := expenseRepo.FindByID(expenseId)
+	if err != nil {
+		templates.Render(w, "404.html", data, true)
+		return
+	}
+	if expense.ID.String() == "" {
+		templates.Render(w, "404.html", data, true)
+		return
+	}
+	category, err := categtoryRepo.FindByID(expense.CategoryID)
+
+	if err != nil {
+		templates.Render(w, "404.html", data, true)
+		return
+	}
+	expense.ExpenseDate = expense.ExpenseDate.Local()
+	data["Expense"] = expense
+	data["Category"] = category
+	templates.Render(w, "expense-detail.html", data, true)
 }

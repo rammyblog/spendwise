@@ -2,7 +2,6 @@ package templates
 
 import (
 	"embed"
-	"fmt"
 	"html/template"
 	"net/http"
 )

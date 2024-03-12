@@ -11,7 +11,7 @@ func SetCookie(w http.ResponseWriter, name string, value string, expirationTime 
 		Value:    value,
 		Path:     "/",
 		Expires:  expirationTime,
-		HttpOnly: true,
+		// HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie)
 }
