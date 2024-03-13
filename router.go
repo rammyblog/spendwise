@@ -87,8 +87,10 @@ func router() *chi.Mux {
 			if strings.Contains(r.Referer(), "expenses") {
 				data["Header"] = `{"Expenses-Page": "true"}`
 				data["Target"] = "#expenses"
+				data["State"] = "Create"
 
 			}
+
 			templates.Render(w, "add-expense.html", data, false)
 		})
 

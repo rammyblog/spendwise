@@ -22,11 +22,12 @@ func Render(w http.ResponseWriter, t string, data interface{}, renderBase bool) 
 		"row.html",
 		"expense-table.html",
 		"expense-form.html",
+		"expense-details-partial.html",
 	}
 
 	if !renderBase {
 		templateSlice = append(templateSlice, t)
-		templateSlice = append(templateSlice, "row.html", "expense-form.html")
+		templateSlice = append(templateSlice, "row.html", "expense-form.html", "expense-details-partial.html")
 		tmpl, err := template.ParseFS(templateFS, templateSlice...)
 
 		if err != nil {

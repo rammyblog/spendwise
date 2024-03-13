@@ -194,14 +194,22 @@ func EditExpenseForm(w http.ResponseWriter, r *http.Request) {
 	data["Expense"] = expense
 	data["ExpenseDate"] = parsedDate
 	data["Link"] = "/dashboard/edit-expense/" + expenseId
+	expensesDetailsPage := r.Header.Get("HX-Trigger")
+
 	data["Target"] = "#expenses"
+	if expensesDetailsPage == "detail-edit-btn" {
+		data["Header"] = `{"Detail-Page": "true"}`
+		data["Target"] = "#expense-details"
+		data["State"] = "Update"
+
+	}
+	fmt.Println("data: ", data)
 	templates.Render(w, "add-expense.html", data, false)
 }
 
 func UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	var expense models.Expense
 	const layout = "2006-01-02"
-
 	parsedDate, err := time.Parse(layout, r.FormValue("expense_date"))
 	if err != nil {
 		middleware.HandleError(w, err, "Error parsing date")
@@ -238,10 +246,28 @@ func UpdateExpense(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]interface{}{}
 
+	expenseDetailPage := r.Header.Get("Detail-Page")
+
+	if expenseDetailPage == "true" {
+		categoryRepo := repositories.NewCategoryRepository(config.GlobalConfig.DB)
+		category, err := categoryRepo.FindByID(expense.CategoryID)
+		if err != nil {
+			middleware.HandleError(w, err, "Error updating expense")
+			return
+		}
+		expense.ExpenseDate = expense.ExpenseDate.Local()
+		data["Expense"] = expense
+		data["Category"] = category
+		templates.Render(w, "expense-details-partial.html", data, false)
+		return
+	}
+
 	expenses, err := expenseRepo.FindByUserIDAndJoinCategory(userId, 10)
 	if err != nil {
 		middleware.HandleError(w, err, "Error getting expenses")
+		return
 	}
+
 	data["Expenses"] = expenses
 	templates.Render(w, "expense-table.html", data, false)
 }
