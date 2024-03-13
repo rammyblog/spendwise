@@ -73,7 +73,6 @@ func (repo *ExpenseRepository) FindByUserID(userID string, limit int) ([]models.
 
 func (repo *ExpenseRepository) FindByUserIDAndJoinCategory(userID string, limit int) ([]ExpenseWithCategory, error) {
 	var expensesWithCategory []ExpenseWithCategory
-	// err := repo.db.Joins("Category").Where("user_id = ?", userID).Limit(limit).Find(&expensesWithCategory).Error
 	err := repo.db.Table("expenses").
 		Select("expenses.name, expenses.amount, expenses.id, expenses.expense_date, categories.name as category_name").
 		Joins("left join categories on categories.id = expenses.category_id").

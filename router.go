@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -22,7 +24,7 @@ func router() *chi.Mux {
 	r.Use(middleware.RedirectSlashes)
 
 	fs := http.FileServer(http.Dir("static/"))
-    r.Handle("/*", http.StripPrefix("/", fs))
+	r.Handle("/*", http.StripPrefix("/", fs))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -65,11 +67,13 @@ func router() *chi.Mux {
 
 		r.Get("/dashboard/add-expense", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			fmt.Println(r.Referer(), "referer")
 			w.WriteHeader(http.StatusOK)
 			data := map[string]interface{}{
 				"Message": "",
 				"Link":    "",
 				"Error":   "",
+				"Header":  "",
 			}
 			categories, err := controller.GetCategories()
 			if err != nil {
@@ -79,6 +83,12 @@ func router() *chi.Mux {
 				return
 			}
 			data["Categories"] = categories
+			data["Link"] = "/dashboard/add-expense"
+			if strings.Contains(r.Referer(), "expenses") {
+				data["Header"] = `{"Expenses-Page": "true"}`
+				data["Target"] = "#expenses"
+
+			}
 			templates.Render(w, "add-expense.html", data, false)
 		})
 
@@ -92,3 +102,5 @@ func router() *chi.Mux {
 
 	return r
 }
+
+// hx-headers='{"Expenses-Page": "true"}'

@@ -2,15 +2,16 @@ package utils
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 )
 
 func SetCookie(w http.ResponseWriter, name string, value string, expirationTime time.Time) {
 	cookie := http.Cookie{
-		Name:     name,
-		Value:    value,
-		Path:     "/",
-		Expires:  expirationTime,
+		Name:    name,
+		Value:   value,
+		Path:    "/",
+		Expires: expirationTime,
 		// HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie)
@@ -35,9 +36,15 @@ func GetAndDeleteCookie(w http.ResponseWriter, r *http.Request, name string) (st
 
 func DeleteCookie(w http.ResponseWriter, name string) {
 	cookie := http.Cookie{
-		Name:  name,
+		Name:   name,
 		Value:  "",
 		MaxAge: -1,
 	}
 	http.SetCookie(w, &cookie)
+}
+
+func StringToInt(s string) int {
+	num, _ := strconv.Atoi(s)
+
+	return num
 }

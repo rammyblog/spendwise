@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -16,39 +17,45 @@ import (
 
 func AddExpense(w http.ResponseWriter, r *http.Request) {
 	var expense models.Expense
+	const layout = "2006-01-02"
 
-	err := r.ParseForm()
+	parsedDate, err := time.Parse(layout, r.FormValue("expense_date"))
+	if err != nil {
+		middleware.HandleError(w, err, "Error parsing date")
+		return
+	}
+	expense.ExpenseDate = parsedDate
+
+	err = r.ParseForm()
+
 	if err != nil {
 		middleware.HandleError(w, err, "Error adding expense")
 	}
+
+	r.PostForm.Set("expense_date", parsedDate.Format("2006-01-02T15:04:05Z07:00"))
 
 	decoder := schema.NewDecoder()
 	err = decoder.Decode(&expense, r.PostForm)
 	if err != nil {
+		fmt.Println("Error decoding form: ", err)
 		middleware.HandleError(w, err, "Error adding expense")
-
+		return
 	}
 
 	userId := r.Context().Value(middleware.UserIDKey).(string)
 
-	if err != nil {
-		middleware.HandleError(w, err, "Error adding expense")
-
-	}
 	expense.UserID = userId
 
 	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
 	err = expenseRepo.Create(&expense)
 	if err != nil {
 		middleware.HandleError(w, err, "Error adding expense")
-
 	}
 
 	w.WriteHeader(http.StatusCreated)
 
 	data := map[string]interface{}{}
 	expensesPage := r.Header.Get("Expenses-Page")
-	fmt.Println(expensesPage, "expensesPage")
 
 	if expensesPage == "true" {
 		expenses, err := expenseRepo.FindByUserIDAndJoinCategory(userId, 10)
