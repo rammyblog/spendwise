@@ -14,7 +14,7 @@
         class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600"
       >
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          Add Expense
+          {{if eq .State "Create"}} Add Expense {{else}} Update Expense {{end}}
         </h3>
         <button
           type="button"
@@ -63,7 +63,6 @@
       event.target.id === 'add-expense-form'
     ) {
       if (cancelButton) {
-        console.log(`Expense added successfully`);
         new Toast({
           message: 'Expense added successfully',
           type: 'success',

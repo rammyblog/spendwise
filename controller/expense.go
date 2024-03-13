@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 
 	"github.com/gorilla/schema"
 	"github.com/rammyblog/spendwise/config"
@@ -201,9 +202,7 @@ func EditExpenseForm(w http.ResponseWriter, r *http.Request) {
 		data["Header"] = `{"Detail-Page": "true"}`
 		data["Target"] = "#expense-details"
 		data["State"] = "Update"
-
 	}
-	fmt.Println("data: ", data)
 	templates.Render(w, "add-expense.html", data, false)
 }
 
@@ -255,7 +254,9 @@ func UpdateExpense(w http.ResponseWriter, r *http.Request) {
 			middleware.HandleError(w, err, "Error updating expense")
 			return
 		}
+		fmt.Println("category: ", expense)
 		expense.ExpenseDate = expense.ExpenseDate.Local()
+		expense.ID, _ = uuid.Parse(expenseId)
 		data["Expense"] = expense
 		data["Category"] = category
 		templates.Render(w, "expense-details-partial.html", data, false)
