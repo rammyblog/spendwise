@@ -92,6 +92,9 @@ func router() *chi.Mux {
 			templates.Render(w, "add-expense.html", data, false)
 		})
 
+		r.Get("/dashboard/edit-expense/{id}", controller.EditExpenseForm)
+		r.Post("/dashboard/edit-expense/{id}", controller.UpdateExpense)
+
 		r.Post("/dashboard/add-expense", controller.AddExpense)
 
 		r.Get("/dashboard/expense-graph", controller.ExpenseGraph)

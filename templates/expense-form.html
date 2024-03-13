@@ -37,7 +37,7 @@
         id="amount"
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-600 focus:border-gray-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
         placeholder="$2999"
-        required="{{.Expense.Amount}}"
+        value="{{.Expense.Amount}}"
       />
     </div>
     <div>
@@ -52,9 +52,9 @@
         required=""
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
       >
-        <option selected="{{.Category.ID}}">Select category</option>
         {{ range .Categories }}
-        <option value="{{.ID}}">{{.Name}}</option>
+        <option value="{{.ID}}" {{if eq $.ID $.Expense.CategoryID}}selected{{end}}>{{.Name}}</option>
+
         {{end}}
       </select>
     </div>
@@ -70,7 +70,7 @@
         id="date"
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-600 focus:border-gray-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
         required=""
-        value="{{.Expense.Date}}"
+        value="{{.ExpenseDate}}"
       />
     </div>
 

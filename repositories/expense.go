@@ -49,7 +49,7 @@ func (repo *ExpenseRepository) FindAll() ([]models.Expense, error) {
 
 func (repo *ExpenseRepository) Update(id string, expense *models.Expense) error {
 	var existingExpense models.Expense
-	err := repo.db.First(&existingExpense, id).Error
+	err := repo.db.Where("id = ?", id).First(&existingExpense).Error
 	if err != nil {
 		return err
 	}
@@ -70,6 +70,7 @@ func (repo *ExpenseRepository) FindByUserID(userID string, limit int) ([]models.
 	err := repo.db.Where("user_id = ?", userID).Limit(limit).Find(&expenses).Error
 	return expenses, err
 }
+
 
 func (repo *ExpenseRepository) FindByUserIDAndJoinCategory(userID string, limit int) ([]ExpenseWithCategory, error) {
 	var expensesWithCategory []ExpenseWithCategory
