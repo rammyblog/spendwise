@@ -1,3 +1,10 @@
+<style>
+  tr.htmx-swapping td {
+    opacity: 0;
+    transition: opacity 1s ease-out;
+  }
+</style>
+
 <div id="processing" class="htmx-indicator">Processing...</div>
 <div class="flex flex-col">
   <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -32,3 +39,14 @@
     </div>
   </div>
 </div>
+
+<script>
+  function handleError(event) {
+    const error = JSON.parse(event.detail.xhr.response);
+    new Toast({
+      message: error.error,
+      type: 'danger',
+    });
+  }
+  document.addEventListener('htmx:responseError', handleError);
+</script>

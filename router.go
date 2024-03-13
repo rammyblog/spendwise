@@ -94,6 +94,7 @@ func router() *chi.Mux {
 
 		r.Get("/dashboard/edit-expense/{id}", controller.EditExpenseForm)
 		r.Post("/dashboard/edit-expense/{id}", controller.UpdateExpense)
+		r.Delete("/dashboard/delete-expense/{id}", controller.DeleteExpense)
 
 		r.Post("/dashboard/add-expense", controller.AddExpense)
 

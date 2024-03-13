@@ -245,3 +245,45 @@ func UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	data["Expenses"] = expenses
 	templates.Render(w, "expense-table.html", data, false)
 }
+
+func DeleteExpense(w http.ResponseWriter, r *http.Request) {
+	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
+	expenseId := chi.URLParam(r, "id")
+	userId := r.Context().Value(middleware.UserIDKey).(string)
+	// confirm user owns the expense
+	expense, err := expenseRepo.FindByID(expenseId)
+	if err != nil {
+		middleware.HandleError(w, err, "Error deleting expense")
+		return
+	}
+	if expense.UserID != userId {
+		middleware.HandleError(w, err, "Error deleting expense")
+		return
+	}
+	err = expenseRepo.Delete(expenseId)
+	if err != nil {
+		middleware.HandleError(w, err, "Error deleting expense")
+		return
+	}
+
+	data := map[string]interface{}{}
+
+	expenses, err := expenseRepo.FindByUserIDAndJoinCategory(userId, 10)
+	if err != nil {
+		middleware.HandleError(w, err, "Error getting expenses")
+		return
+	}
+
+	// check if the request is from the expenses page
+	expensesDetailsPage := r.Header.Get("HX-Trigger")
+
+	if expensesDetailsPage == "detail-delete-btn" {
+		url := "http://" + r.Host + "/dashboard/expenses"
+		w.Header().Set("HX-Redirect", url)
+		return
+	}
+
+	data["Expenses"] = expenses
+	templates.Render(w, "expense-table.html", data, false)
+
+}

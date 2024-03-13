@@ -1,39 +1,55 @@
 {{template "base" .}} {{ define "navigation" }} {{template "nav"}} {{end}}
 {{define "content"}}
 
-<div id="single-expense">
+<div id="single-expense" class="mt-4">
   <div class="flex justify-between items-center mb-4">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <h1 class="text-2xl font-bold text-white-900 dark:text-white">
       Expense Details
     </h1>
   </div>
 
   <div class="grid grid-cols-2 gap-4">
     <div>
-      <p class="text-gray-600">Name:</p>
+      <p class="text-white font-thin">Name:</p>
       <p class="font-semibold">{{.Expense.Name}}</p>
     </div>
     <div>
-      <p class="text-gray-600">Date:</p>
+      <p class="text-white font-thin">Date:</p>
       <p class="font-semibold">{{.Expense.ExpenseDate}}</p>
     </div>
     <div>
-      <p class="text-gray-600">Category:</p>
+      <p class="text-white font-thin">Category:</p>
       <p class="font-semibold">{{.Category.Name}}</p>
     </div>
     <div>
-      <p class="text-gray-600">Amount:</p>
+      <p class="text-white font-thin">Amount:</p>
       <p class="font-semibold">${{.Expense.Amount}}</p>
     </div>
     <div>
-      <p class="text-gray-600">Description:</p>
+      <p class="text-white font-thin">Description:</p>
       <p class="font-semibold">{{.Expense.Description}}</p>
     </div>
   </div>
   <div class="mt-6">
-    <a href="#" class="text-blue-500 hover:underline">Edit</a>
-    <a href="#" class="ml-4 text-red-500 hover:underline">Delete</a>
+    <button
+      hx-get="/dashboard/edit-expense/{{.Expense.ID}}"
+      hx-target="#addExpenseModal"
+      hx-swap="innerHTML"
+      class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-gray-700 rounded-lg focus:shadow-outline hover:bg-blue-800"
+    >
+      Edit
+    </button>
+    <button
+      hx-delete="/dashboard/delete-expense/{{.Expense.ID}}"
+      hx-confirm="Are you sure you want to delete {{.Expense.Name}}?"
+      id="detail-delete-btn"
+      class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-red-700 rounded-lg focus:shadow-outline"
+    >
+      Delete
+    </button>
   </div>
 </div>
+
+<div id="addExpenseModal"></div>
 
 {{ end }}

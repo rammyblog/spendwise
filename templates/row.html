@@ -13,6 +13,16 @@
     >
       Edit
     </button>
+    <button
+      hx-delete="/dashboard/delete-expense/{{.ID}}"
+      hx-confirm="Are you sure you want to delete {{.Name}}?"
+      hx-indicator="#processing"
+      hx-target="#expenses"
+      hx-swap="outerHTML swap:1s"
+      class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-red-700 rounded-lg focus:shadow-outline"
+    >
+      Delete
+    </button>
   </td>
   <td class="whitespace-nowrap px-1 py-1">
     <a href="/dashboard/expenses/{{.ID}}">View</a>
