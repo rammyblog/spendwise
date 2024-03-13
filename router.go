@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -27,9 +26,7 @@ func router() *chi.Mux {
 	r.Handle("/*", http.StripPrefix("/", fs))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		templates.Render(w, "index.html", nil, true)
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 	})
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -67,7 +64,6 @@ func router() *chi.Mux {
 
 		r.Get("/dashboard/add-expense", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			fmt.Println(r.Referer(), "referer")
 			w.WriteHeader(http.StatusOK)
 			data := map[string]interface{}{
 				"Message": "",
@@ -108,5 +104,3 @@ func router() *chi.Mux {
 
 	return r
 }
-
-// hx-headers='{"Expenses-Page": "true"}'
