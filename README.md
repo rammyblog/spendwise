@@ -17,7 +17,7 @@
 ## Install
 
 ```sh
-npm install
+npm install -g tailwindcss
 ```
 
 ## Usage
