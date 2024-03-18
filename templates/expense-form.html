@@ -101,6 +101,8 @@
       >
     </div>
   </div>
+  <input type="hidden" name="csrfToken" value="{{.Token}}" />
+
   <button
     type="submit"
     id="add-expense-button"
@@ -119,6 +121,5 @@
       ></path>
     </svg>
     {{if eq .State "Create"}} Add Expense {{else}} Update Expense {{end}}
-
   </button>
 </form>

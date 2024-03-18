@@ -1,40 +1,69 @@
-<style>
-  tr.htmx-swapping td {
-    opacity: 0;
-    transition: opacity 1s ease-out;
-  }
-</style>
-
 <div id="processing" class="htmx-indicator">Processing...</div>
-<div class="flex flex-col">
-  <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
-    <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">
-      <div class="overflow-hidden">
-        <div class="flex justify-end">
-          <button
-            hx-get="/dashboard/add-expense"
-            hx-target="#addExpenseModal"
-            hx-swap="innerHTML"
-            hx-indicator="#processing"
-            class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-blue-700 rounded-lg focus:shadow-outline hover:bg-blue-800"
-            href=""
-          >
-            Add
-          </button>
+<div id="expenses">
+  <div class="flex flex-col">
+    <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">
+        <div class="overflow-hidden">
+          <div class="flex justify-end">
+            <button
+              hx-get="/dashboard/add-expense"
+              hx-target="#addExpenseModal"
+              hx-swap="innerHTML"
+              hx-indicator="#processing"
+              class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-blue-700 rounded-lg focus:shadow-outline hover:bg-blue-800"
+              href=""
+            >
+              Add
+            </button>
+          </div>
+          <table class="min-w-full text-left text-sm font-light">
+            <thead class="border-b font-medium dark:border-neutral-500">
+              <tr>
+                <th scope="col" class="px-6 py-4">Name</th>
+                <th scope="col" class="px-6 py-4">Amount</th>
+                <th scope="col" class="px-6 py-4">Category</th>
+                <th scope="col" class="px-6 py-4">Date</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              {{range .Expenses}}
+
+              <tr id="datarow-{{.ID}}" class="border-b dark:border-neutral-500">
+                <td class="whitespace-nowrap px-6 py-4">{{.Name}}</td>
+                <td class="whitespace-nowrap px-6 py-4">{{.Amount}}</td>
+                <td class="whitespace-nowrap px-6 py-4">{{.CategoryName}}</td>
+                <td class="whitespace-nowrap px-6 py-4">{{.ExpenseDate}}</td>
+                <td class="whitespace-nowrap px-1 py-1">
+                  <button
+                    hx-get="/dashboard/edit-expense/{{.ID}}"
+                    hx-target="#addExpenseModal"
+                    hx-swap="innerHTML"
+                    hx-indicator="#processing"
+                    class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-gray-700 rounded-lg focus:shadow-outline hover:bg-blue-800"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    hx-delete="/dashboard/delete-expense/{{.ID}}"
+                    hx-confirm="Are you sure you want to delete {{.Name}}?"
+                    hx-indicator="#processing"
+                    hx-target="#expenses"
+                    hx-swap="outerHTML swap:1s"
+                    hx-headers='{"X-CSRF-Token": "{{$.CSRF}}" }'
+                    class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-red-700 rounded-lg focus:shadow-outline"
+                  >
+                    Delete
+                  </button>
+                </td>
+                <td class="whitespace-nowrap px-1 py-1">
+                  <a href="/dashboard/expenses/{{.ID}}">View</a>
+                </td>
+              </tr>
+
+              {{end}}
+            </tbody>
+          </table>
         </div>
-        <table class="min-w-full text-left text-sm font-light">
-          <thead class="border-b font-medium dark:border-neutral-500">
-            <tr>
-              <th scope="col" class="px-6 py-4">Name</th>
-              <th scope="col" class="px-6 py-4">Amount</th>
-              <th scope="col" class="px-6 py-4">Category</th>
-              <th scope="col" class="px-6 py-4">Date</th>
-            </tr>
-          </thead>
-          <tbody id="table-body">
-            {{range .Expenses}} {{ template "row.html". }} {{end}}
-          </tbody>
-        </table>
       </div>
     </div>
   </div>

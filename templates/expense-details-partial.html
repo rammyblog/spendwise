@@ -34,6 +34,7 @@
     hx-delete="/dashboard/delete-expense/{{.Expense.ID}}"
     hx-confirm="Are you sure you want to delete {{.Expense.Name}}?"
     id="detail-delete-btn"
+    hx-headers='{"X-CSRF-Token": "{{.CSRF}}" }'
     class="inline-flex items-center h-8 px-4 m-2 text-sm text-blue-100 transition-colors duration-150 bg-red-700 rounded-lg focus:shadow-outline"
   >
     Delete

@@ -3,10 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 	"github.com/rammyblog/spendwise/controller"
 	localMiddleware "github.com/rammyblog/spendwise/middleware"
 	"github.com/rammyblog/spendwise/templates"
@@ -16,6 +18,8 @@ import (
 func router() *chi.Mux {
 
 	r := chi.NewRouter()
+	csrfMiddleware := csrf.Protect([]byte(os.Getenv("CSRF_SECRET")), csrf.Secure(strings.ToLower(os.Getenv("PROD")) == "true"), csrf.FieldName("csrfToken"))
+
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
@@ -58,6 +62,7 @@ func router() *chi.Mux {
 
 	r.Group(func(r chi.Router) {
 		r.Use(localMiddleware.IsGoogleAuthenticated)
+		r.Use(csrfMiddleware)
 		r.Get("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 			controller.Dashboard(w, r, 5)
 		})
@@ -70,6 +75,9 @@ func router() *chi.Mux {
 				"Link":    "",
 				"Error":   "",
 				"Header":  "",
+				"State":   "Create",
+				"Token":   csrf.Token(r),
+				"Target":  "#expense-stats",
 			}
 			categories, err := controller.GetCategories()
 			if err != nil {
@@ -83,23 +91,24 @@ func router() *chi.Mux {
 			if strings.Contains(r.Referer(), "expenses") {
 				data["Header"] = `{"Expenses-Page": "true"}`
 				data["Target"] = "#expenses"
-				data["State"] = "Create"
-
 			}
 
 			templates.Render(w, "add-expense.html", data, false)
 		})
 
 		r.Get("/dashboard/edit-expense/{id}", controller.EditExpenseForm)
+		r.Get("/dashboard/expense-graph", controller.ExpenseGraph)
+		r.Get("/dashboard/expenses", controller.ExpenseList)
+		r.Get("/dashboard/expenses/{id}", controller.ExpenseDetail)
+
+
+		
 		r.Post("/dashboard/edit-expense/{id}", controller.UpdateExpense)
 		r.Delete("/dashboard/delete-expense/{id}", controller.DeleteExpense)
 
 		r.Post("/dashboard/add-expense", controller.AddExpense)
 
-		r.Get("/dashboard/expense-graph", controller.ExpenseGraph)
-		r.Get("/dashboard/expenses", controller.ExpenseList)
-		r.Get("/dashboard/expenses/{id}", controller.ExpenseDetail)
-
+		
 	})
 
 	return r

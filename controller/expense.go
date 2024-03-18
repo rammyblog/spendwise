@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/schema"
 	"github.com/rammyblog/spendwise/config"
 	"github.com/rammyblog/spendwise/middleware"
@@ -22,6 +23,7 @@ type CategoriesString struct {
 }
 
 func AddExpense(w http.ResponseWriter, r *http.Request) {
+
 	var expense models.Expense
 	const layout = "2006-01-02"
 
@@ -41,6 +43,7 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	r.PostForm.Set("expense_date", parsedDate.Format("2006-01-02T15:04:05Z07:00"))
 
 	decoder := schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
 	err = decoder.Decode(&expense, r.PostForm)
 	if err != nil {
 		fmt.Println("Error decoding form: ", err)
@@ -86,7 +89,6 @@ func AddExpense(w http.ResponseWriter, r *http.Request) {
 	data["MaxCategory"] = maxAmountForCategory.CategoryName
 	data["MaxAmount"] = maxAmountForCategory.Amount
 	data["ChartData"] = totalAmountPerCategory
-
 	templates.Render(w, "expense-stats-grid.html", data, false)
 }
 
@@ -105,7 +107,6 @@ func Dashboard(w http.ResponseWriter, r *http.Request, limit int) {
 	data := map[string]interface{}{}
 	expenseRepo := repositories.NewExpenseRepository(config.GlobalConfig.DB)
 	userId := r.Context().Value(middleware.UserIDKey).(string)
-	fmt.Println("userId: ", userId)
 	expenses, err := expenseRepo.FindByUserID(userId, limit)
 	if err != nil {
 		middleware.HandleError(w, err, "Error getting expenses")
@@ -131,7 +132,9 @@ func ExpenseList(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		middleware.HandleError(w, err, "Error getting expenses")
 	}
+
 	data["Expenses"] = expenses
+	data["CSRF"] = csrf.Token(r)
 	templates.Render(w, "expenses.html", data, true)
 }
 
@@ -158,6 +161,7 @@ func ExpenseDetail(w http.ResponseWriter, r *http.Request) {
 	expense.ExpenseDate = expense.ExpenseDate.Local()
 	data["Expense"] = expense
 	data["Category"] = category
+	data["CSRF"] = csrf.Token(r)
 	templates.Render(w, "expense-detail.html", data, true)
 }
 
@@ -189,7 +193,7 @@ func EditExpenseForm(w http.ResponseWriter, r *http.Request) {
 		middleware.HandleError(w, err, "Error getting categories")
 		return
 	}
-
+	data["Token"] = csrf.Token(r)
 	data["Categories"] = categoriesString
 	parsedDate := expense.ExpenseDate.Format("2006-01-02")
 	data["Expense"] = expense
@@ -225,6 +229,7 @@ func UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	r.PostForm.Set("expense_date", parsedDate.Format("2006-01-02T15:04:05Z07:00"))
 
 	decoder := schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
 	err = decoder.Decode(&expense, r.PostForm)
 	if err != nil {
 		fmt.Println("Error decoding form: ", err)
@@ -311,6 +316,7 @@ func DeleteExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data["Expenses"] = expenses
+	data["CSRF"] = csrf.Token(r)
 	templates.Render(w, "expense-table.html", data, false)
 
 }

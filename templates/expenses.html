@@ -1,7 +1,5 @@
 {{template "base" .}} {{ define "navigation" }} {{template "nav"}} {{end}}
-{{define "content"}}
-
-<div id="expenses">{{ template "expense-table.html" . }}</div>
+{{define "content"}} {{ template "expense-table.html" . }}
 <div id="addExpenseModal"></div>
 
 {{ end }}
